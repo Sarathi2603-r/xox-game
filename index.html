@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="Play XOX (Tic Tac Toe) online by Sarathi R. Free fun browser game with celebration effects.">
+
+<meta name="author" content="Sarathi R">
+
+ <title> XOX Game - Play Tic Tac Toe Online | By Sarathi R</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          #b22222,
+          #b22222 20px,
+          #a52a2a 20px,
+          #a52a2a 40px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          #b22222,
+          #b22222 20px,
+          #a52a2a 20px,
+          #a52a2a 40px
+        );
+      background-size: 40px 40px;
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+    }
+
+    .cell {
+      background-color: white;
+      border: 2px solid #333;
+      font-size: 2em;
+      text-align: center;
+      line-height: 100px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .cell:hover {
+      background-color: #ddd;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+      color: white;
+      font-size: 18px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>XOX Game (Tic Tac Toe)</h1>
+  <div class="board" id="board"></div>
+  <div id="status">Player X's turn</div>
+  <button onclick="resetGame()">Reset Game</button>
+  <canvas id="confetti"></canvas>
+
+  <script>
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let currentPlayer = 'X';
+    let cells = [];
+
+    // Confetti variables
+    let confettiPieces = [];
+    let animationFrameId;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfetti() {
+      confettiPieces = [];
+      for (let i = 0; i < 100; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          size: Math.random() * 8 + 4,
+          speed: Math.random() * 3 + 2,
+          angle: Math.random() * 360
+        });
+      }
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let c of confettiPieces) {
+        ctx.fillStyle = c.color;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+        ctx.fill();
+        c.y += c.speed;
+        c.x += Math.sin(c.angle) * 1;
+        if (c.y > canvas.height) c.y = 0;
+      }
+      animationFrameId = requestAnimationFrame(drawConfetti);
+    }
+
+    function startConfetti() {
+      createConfetti();
+      drawConfetti();
+      setTimeout(() => cancelAnimationFrame(animationFrameId), 5000);
+    }
+
+    function checkWinner() {
+      const winPatterns = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+
+      for (let pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (cells[a].textContent &&
+            cells[a].textContent === cells[b].textContent &&
+            cells[a].textContent === cells[c].textContent) {
+          status.textContent = `🎉 Player ${cells[a].textContent} wins! 🎉`;
+          board.removeEventListener('click', handleClick);
+          startConfetti();
+          return true;
+        }
+      }
+
+      if ([...cells].every(cell => cell.textContent)) {
+        status.textContent = "It's a draw!";
+        return true;
+      }
+
+      return false;
+    }
+
+    function handleClick(e) {
+      const cell = e.target;
+      if (cell.textContent !== '') return;
+
+      cell.textContent = currentPlayer;
+      if (!checkWinner()) {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        status.textContent = `Player ${currentPlayer}'s turn`;
+      }
+    }
+
+    function createBoard() {
+      board.innerHTML = '';
+      cells = [];
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.addEventListener('click', handleClick);
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    function resetGame() {
+      currentPlayer = 'X';
+      status.textContent = "Player X's turn";
+      cancelAnimationFrame(animationFrameId);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+<p style="margin-top: 30px; font-size: 14px; color: white;">
+  © 2022 Created by Sarathi R
+</p>
+</body>
+</html>
